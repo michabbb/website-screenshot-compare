@@ -39,3 +39,15 @@ Before a screenshot gets taken, GIF Images get replaced with a placeholder image
 | **dev**        | The URL that Playwright accesses (e.g., your local development server).                                                      |
 | **dev_browser**| Displayed in the summary when a mismatch is found, allowing you to quickly open the development URL in your browser.         |
 
+## example output
+
+```bash
+Summary of differing URL pairs:
+1. Differences found
+   Live: https://something.com/live1
+   Dev: http://my-local-docker-containe/dev1
+   Dev Browser: http://local.test/dev1
+   Diff image: diffs/diff-1-1740156909377.png
+```
+
+**Red areas in the diff image indicate differences between the live and dev screenshots.** ‼️
