@@ -1,0 +1,14 @@
+{
+  "name": "screenshot-compare",
+  "version": "1.0.0",
+  "main": "script.js",
+  "type": "module",
+  "scripts": {
+    "start": "node script.js"
+  },
+  "dependencies": {
+    "playwright": "latest",
+    "pixelmatch": "latest",
+    "pngjs": "latest"
+  }
+}
