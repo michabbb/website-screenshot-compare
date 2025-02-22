@@ -3,21 +3,21 @@ import fs from 'fs';
 import { PNG } from 'pngjs';
 import pixelmatch from 'pixelmatch';
 
-// Funktion zum Ersetzen von GIFs durch Platzhalter
+// Function to replace GIFs with placeholders
 async function disableGifAnimations(page) {
   await page.evaluate(() => {
-    // Finde alle <img>-Elemente mit .gif im src-Attribut
+    // Find all <img> elements with .gif in the src attribute
     const gifs = document.querySelectorAll('img[src$=".gif"]');
     
     gifs.forEach((gif) => {
-      // Prüfe, ob das GIF schon geladen ist
+      // Check if the GIF is already loaded
       if (gif.complete && gif.naturalWidth !== 0) {
         const width = gif.naturalWidth;
         const height = gif.naturalHeight;
-        // Ersetze die src mit einem Platzhalter in der passenden Größe
+        // Replace the src with a placeholder of the appropriate size
         gif.src = `https://placehold.co/${width}x${height}`;
       } else {
-        // Falls das GIF noch nicht geladen ist, warte auf das 'load'-Event
+        // If the GIF isn't loaded yet, wait for the 'load' event
         gif.addEventListener('load', () => {
           const width = gif.naturalWidth;
           const height = gif.naturalHeight;
@@ -26,7 +26,17 @@ async function disableGifAnimations(page) {
       }
     });
   });
-  // Warte kurz, um sicherzustellen, dass alle GIFs geladen und ersetzt wurden
+
+  // Step 2: Disable CSS animations
+  await page.addStyleTag({
+    content: `
+      * {
+        animation: none !important;
+      }
+    `,
+  });
+
+  // Wait a bit to ensure all GIFs are loaded and replaced
   await page.waitForTimeout(1000);
 }
 
@@ -37,17 +47,17 @@ async function processPair(pair, index, browser, authHeader) {
     extraHTTPHeaders: { 'Authorization': authHeader },
   });
 
-  // Screenshot der Dev-Seite
+  // Screenshot of the Development page
   const devPage = await context.newPage();
   await devPage.goto(pair.dev, { waitUntil: 'networkidle' });
-  await disableGifAnimations(devPage); // GIFs durch Platzhalter ersetzen
+  await disableGifAnimations(devPage); // Replace GIFs with placeholders
   const devScreenshot = await devPage.screenshot({ fullPage: true });
   await devPage.close();
 
-  // Screenshot der Live-Seite
+  // Screenshot of the Live page
   const livePage = await context.newPage();
   await livePage.goto(pair.live, { waitUntil: 'networkidle' });
-  await disableGifAnimations(livePage); // GIFs durch Platzhalter ersetzen
+  await disableGifAnimations(livePage); // Replace GIFs with placeholders
   const liveScreenshot = await livePage.screenshot({ fullPage: true });
   await livePage.close();
 
@@ -120,7 +130,7 @@ async function run() {
   const password = process.env.BASIC_AUTH_PASSWORD || 'password';
   const authHeader = `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`;
 
-  // Parallele Verarbeitung in Chunks zu je 10 URL-Paaren
+  // Parallel processing in chunks of 10 URL pairs
   for (let i = 0; i < urlPairs.length; i += 10) {
     const chunk = urlPairs.slice(i, i + 10);
     const results = await Promise.all(
